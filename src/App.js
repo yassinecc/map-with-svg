@@ -18,6 +18,11 @@ function App() {
         containerElement={<div style={{ height: `100vh` }} />}
         mapElement={<div style={{ height: `100%` }} />}
       />
+      <div className="form-container">
+        <div className="field">
+          <input type="text" name="name" />
+        </div>
+      </div>
     </div>
   );
 }
