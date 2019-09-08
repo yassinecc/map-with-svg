@@ -1,11 +1,10 @@
 import React from 'react';
-import { GoogleMap, withGoogleMap, withScriptjs } from 'react-google-maps';
+/* global google */
+import { GoogleMap, withGoogleMap } from 'react-google-maps';
 import Autosuggest from 'react-autosuggest';
 import './App.css';
 
-const useGoogle = (Component: React.Component) => withScriptjs(withGoogleMap(Component));
-
-const MapComponent = useGoogle(props => (
+const MapComponent = withGoogleMap(props => (
   <GoogleMap defaultZoom={8} defaultCenter={{ lat: -34.397, lng: 150.644 }}>
     {props.children}
   </GoogleMap>
@@ -19,6 +18,23 @@ function App() {
   const [value, setValue] = React.useState('');
   const [suggestions, setSuggestions] = React.useState([]);
 
+  const mapRef = React.useRef(null);
+  let inputRef = React.useRef(null);
+
+  function storeInputReference(autosuggest) {
+    if (autosuggest !== null) {
+      inputRef.current = autosuggest.input;
+    }
+  }
+
+  if (inputRef.current) {
+    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+      types: ['geocode'],
+    });
+
+    autocomplete.addListener('place_changed', () => {});
+  }
+
   const inputProps = {
     placeholder: "Type a city's name",
     value: value,
@@ -28,7 +44,8 @@ function App() {
   return (
     <div className="App">
       <MapComponent
-        googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyBeLMccTUfAVn3AisQ-KdFqex7rbEcnzC4&v=3.exp"
+        ref={mapRef}
+        googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyBeLMccTUfAVn3AisQ-KdFqex7rbEcnzC4&v=3.exp&libraries=places"
         loadingElement={<div style={{ height: `100%` }} />}
         containerElement={<div style={{ height: `100vh` }} />}
         mapElement={<div style={{ height: `100%` }} />}
@@ -36,6 +53,7 @@ function App() {
       <div className="form-container">
         <div className="field">
           <Autosuggest
+            ref={storeInputReference}
             suggestions={suggestions}
             renderSuggestion={suggestion => <div>{suggestion}</div>}
             getSuggestionValue={getSuggestionValue}
