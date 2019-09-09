@@ -2,7 +2,18 @@ import React from 'react';
 /* global google */
 import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 import Autosuggest from 'react-autosuggest';
+import { Drawer } from 'antd';
+import 'antd/dist/antd.css';
 import './App.css';
+
+const DrawerItem = ({ city, onClick }) => {
+  return city ? (
+    <div className="drawer-item">
+      <div>{city.name}</div>
+      <div onClick={onClick}>X</div>
+    </div>
+  ) : null;
+};
 
 const MapComponent = withGoogleMap(props => (
   <GoogleMap defaultZoom={8} defaultCenter={{ lat: -34.397, lng: 150.644 }}>
@@ -15,6 +26,7 @@ const getSuggestionValue = value => value;
 function App() {
   const [value, setValue] = React.useState('');
   const [cities, setCities] = React.useState([]);
+  const [isDrawerVisible, setDrawerVisible] = React.useState(false);
 
   const mapRef = React.useRef(null);
   let inputRef = React.useRef(null);
@@ -32,7 +44,12 @@ function App() {
 
     autocomplete.addListener('place_changed', () => {
       const a = autocomplete.getPlace();
-      if (a.id) setCities([...cities, { id: [a.id], location: a.geometry.location }]);
+      console.log('a', a);
+      if (a.id)
+        setCities([
+          ...cities,
+          { id: [a.id], name: a.formatted_address, location: a.geometry.location },
+        ]);
     });
   }
 
@@ -52,7 +69,12 @@ function App() {
         mapElement={<div style={{ height: `100%` }} />}
       >
         {cities.map(city => (
-          <Marker icon={{ url: '/assets/pin.svg' }} key={city.id} position={city.location} />
+          <Marker
+            icon={{ url: '/assets/pin.svg' }}
+            key={city.id}
+            position={city.location}
+            onClick={() => setDrawerVisible(true)}
+          />
         ))}
       </MapComponent>
       <div className="form-container">
@@ -68,6 +90,24 @@ function App() {
           />
         </div>
       </div>
+      <Drawer
+        width="30vw"
+        showMask={false}
+        closable={false}
+        placement="right"
+        visible={isDrawerVisible}
+        onClose={() => setDrawerVisible(false)}
+      >
+        <div>
+          {cities.map(city => (
+            <DrawerItem
+              key={city.id}
+              city={city}
+              onClick={() => setCities(cities.filter(filterCity => filterCity.id !== city.id))}
+            />
+          ))}
+        </div>
+      </Drawer>
     </div>
   );
 }
