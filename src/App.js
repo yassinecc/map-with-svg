@@ -1,5 +1,5 @@
-import React from 'react';
 /* global google */
+import React from 'react';
 import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 import Autosuggest from 'react-autosuggest';
 import { Drawer } from 'antd';
@@ -16,7 +16,11 @@ const DrawerItem = ({ city, onClick }) => {
 };
 
 const MapComponent = withGoogleMap(props => (
-  <GoogleMap defaultZoom={8} defaultCenter={{ lat: -34.397, lng: 150.644 }}>
+  <GoogleMap
+    defaultOptions={{ fullscreenControl: false }}
+    defaultZoom={5}
+    defaultCenter={{ lat: 48.887, lng: 2.299 }}
+  >
     {props.children}
   </GoogleMap>
 ));
@@ -43,12 +47,11 @@ function App() {
     });
 
     autocomplete.addListener('place_changed', () => {
-      const a = autocomplete.getPlace();
-      console.log('a', a);
-      if (a.id)
+      const place = autocomplete.getPlace();
+      if (place.id)
         setCities([
           ...cities,
-          { id: [a.id], name: a.formatted_address, location: a.geometry.location },
+          { id: place.id, name: place.formatted_address, location: place.geometry.location },
         ]);
     });
   }
