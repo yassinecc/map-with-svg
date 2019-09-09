@@ -1,6 +1,6 @@
 import React from 'react';
 /* global google */
-import { GoogleMap, withGoogleMap } from 'react-google-maps';
+import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 import Autosuggest from 'react-autosuggest';
 import './App.css';
 
@@ -10,13 +10,11 @@ const MapComponent = withGoogleMap(props => (
   </GoogleMap>
 ));
 
-const getSuggestions = () => ['a', 'b'];
-
 const getSuggestionValue = value => value;
 
 function App() {
   const [value, setValue] = React.useState('');
-  const [suggestions, setSuggestions] = React.useState([]);
+  const [cities, setCities] = React.useState([]);
 
   const mapRef = React.useRef(null);
   let inputRef = React.useRef(null);
@@ -32,7 +30,10 @@ function App() {
       types: ['geocode'],
     });
 
-    autocomplete.addListener('place_changed', () => {});
+    autocomplete.addListener('place_changed', () => {
+      const a = autocomplete.getPlace();
+      if (a.id) setCities([...cities, { id: [a.id], location: a.geometry.location }]);
+    });
   }
 
   const inputProps = {
@@ -45,20 +46,24 @@ function App() {
     <div className="App">
       <MapComponent
         ref={mapRef}
-        googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyBeLMccTUfAVn3AisQ-KdFqex7rbEcnzC4&v=3.exp&libraries=places"
+        googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyBeLMccTUfAVn3AisQ-KdFqex7rbEcnzC4&v=3.exp&libraries=places,drawing"
         loadingElement={<div style={{ height: `100%` }} />}
         containerElement={<div style={{ height: `100vh` }} />}
         mapElement={<div style={{ height: `100%` }} />}
-      />
+      >
+        {cities.map(city => (
+          <Marker icon={{ url: '/assets/pin.svg' }} key={city.id} position={city.location} />
+        ))}
+      </MapComponent>
       <div className="form-container">
         <div className="field">
           <Autosuggest
             ref={storeInputReference}
-            suggestions={suggestions}
-            renderSuggestion={suggestion => <div>{suggestion}</div>}
+            suggestions={[]}
+            renderSuggestion={() => null}
             getSuggestionValue={getSuggestionValue}
-            onSuggestionsFetchRequested={({ value }) => setSuggestions(getSuggestions(value))}
-            onSuggestionsClearRequested={() => setSuggestions([])}
+            onSuggestionsFetchRequested={() => {}}
+            onSuggestionsClearRequested={() => {}}
             inputProps={inputProps}
           />
         </div>
